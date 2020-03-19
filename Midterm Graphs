@@ -1,15 +1,5 @@
 ### Midterm Report Baseline ###
 
-# Steps so far #
-
-# Created manual corpus of all arXiv search results for SDG 8 keywords and SDG 9
-# now, I need to analyze the corpus
-
-#install packages
-install.packages("quanteda")
-install.packages("readtext")
-install.packages("ggplot2")
-install.packages("tidyverse")
 library(quanteda)
 library(readtext)
 library(ggplot2)
