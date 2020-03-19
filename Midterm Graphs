@@ -1,0 +1,56 @@
+### Midterm Report Baseline ###
+
+# Steps so far #
+
+# Created manual corpus of all arXiv search results for SDG 8 keywords and SDG 9
+# now, I need to analyze the corpus
+
+#install packages
+install.packages("quanteda")
+install.packages("readtext")
+install.packages("ggplot2")
+install.packages("tidyverse")
+library(quanteda)
+library(readtext)
+library(ggplot2)
+library(tidyverse)
+
+devtools::install_github("quanteda/quanteda.corpora")
+
+# uploaded SDG 8 dataset
+
+distribution <- read.csv("SDG Distribution.csv")
+
+#plot total SDG 8 Related Publications
+
+ggplot(data = distribution, 
+       aes(x = keyword)) +
+  geom_bar(aes(fill = keyword),
+           color = "black") +
+  geom_text(stat = "count", 
+            aes(label = ..count..), 
+            vjust = 2) + 
+  theme(axis.text.x = element_text(angle = 0,
+                                   size = 9)) +
+  labs(fill = "keyword",
+       x = "SDG Keyword",
+       y = "Total ArXiv Publications", 
+       title = "Distribution of SDG 8 Related Publications")
+
+# uploaded SDG 9 dataset
+distribution.9 <- read.csv("Distribution SDG 9 Results.csv")
+
+#plot total SDG 9 Related Publications
+ggplot(data = distribution.9, 
+       aes(x = keyword)) +
+  geom_bar(aes(fill = keyword),
+           color = "black") +
+  geom_text(stat = "count", 
+            aes(label = ..count..), 
+            vjust = 2) + 
+  theme(axis.text.x = element_text(angle = 0,
+                                   size = 9)) +
+  labs(fill = "keyword",
+       x = "SDG 9 Keyword",
+       y = "Total ArXiv Publications", 
+       title = "Distribution of SDG 9 Related Publications")
