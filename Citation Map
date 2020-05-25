@@ -1,19 +1,20 @@
 #### Citation Map ####
-
+install.packages("knitr")
+library("knitr")
 library("dimensionsR")
 library("dplyr")
 library("Matrix")
 library("stringr")
 library("igraph")
+library("ggplot2")
 library("FactoMineR")
 library("factoextra")
-library("ggplot2")
 library("bibliometrix") 
 
-####### SDG 8 and "machine learning" search term #########
+## SDG 7, Machine Learning, 2010-2020 Dimensions search results ##
 
 #load files
-file <- "http://export.uberresearch.com/2020-04-17/a6d9a5299ea3b8640725b92d0a011a29/Dimensions-Publication-2020-04-17_13-40-53.xlsx"
+file <- "http://export.uberresearch.com/2020-05-06/edb62345df5a6d30688b38eb5536d475/Dimensions-Publication-2020-05-06_08-51-36.xlsx"
 
 #convert search results to excel
 M <- convert2df(file, dbsource = "dimensions", format = "excel")
@@ -22,175 +23,57 @@ M <- convert2df(file, dbsource = "dimensions", format = "excel")
 
 r <- biblioAnalysis(M, sep = ";")
 
-#what does the data for SDG 8 and "machine learning look like"
+#what does the data look like?
 summary(r, k = 10, pause = FALSE)
 
-#Citation Frequency Distribution
-citations(M, field = "article", sep = ";")
+##### Collaboration Networks #####
 
-#Measuring the Top-Authors’ Productivity over Time
-authorProdOverTime(M, k = 10, graph = TRUE)
-
-# Creating Bibliometric Networks
-biblioNetwork(
-  r,
-  analysis = "coupling",
-  network = "authors",
-  n = NULL,
-  sep = ";",
-  shortlabel = TRUE
-) #1339 x 1339 sparse Matrix of class "dgCMatrix"
-
-# Creating Author's Collaboration Network
-
-NetMatrix <- biblioNetwork(M, analysis = "collaboration", network = "authors", sep = ";")
-NetMatrix
+# Author's Collaboration Network
+NetMatricks <- biblioNetwork(M, analysis = "collaboration", network = "authors", sep = ";")
 
 # Plotting Author's Collaboration Network
+net <- networkPlot(NetMatricks, n = 30, type = "kamada", Title = "The Collaboration Network between Top-Cited SDG 7 & ML Researchers",labelsize=0.8)
 
-net <- networkPlot(NetMatrix, n = 30, type = "kamada", Title = "Author's Collaboration Network for SDG 8",labelsize=0.5)
+# University Collaboration Network
+NetMatrix <- biblioNetwork(M, analysis = "collaboration", network = "universities", sep = ";")
 
-# Plot Bibliographic Network
+# Plotting University Collaboration Network
+net <- networkPlot(NetMatrix, n = 30, type = "kamada", Title = "The Collaboration Network between Top-Cited SDG 7 & ML Universities",labelsize=0.6)
+
+####### Co-occurrences Networks #######
+
+# Author-Keyword co-occurrences Network
 options(width = 100)
 S <- summary(object = r, k = 10, pause = FALSE)
 NetMatrixx <- biblioNetwork(M, analysis = "co-occurrences", network = "author_keywords", sep = ";")
 S <- normalizeSimilarity(NetMatrixx, type = "association")
-nett <- networkPlot(S, n = 200, Title = "Co-Occurrence Network for SDG 8", type = "fruchterman", 
-                   labelsize = 0.7, halo = FALSE, cluster = "walktrap",
-                   remove.isolates = FALSE, remove.multiple = FALSE, noloops = TRUE, weighted = TRUE)
-
-# Bradford's Law
-bradford(M)
-
-#############################################################################
-
-####### SDG 9 and "machine learning" search term #########
-
-#load files
-SDG9 <- "http://export.uberresearch.com/2020-04-17/6fef815015aa357d3d2676b523598f87/Dimensions-Publication-2020-04-17_13-47-12.xlsx"
-
-#convert search results to excel
-N <- convert2df(SDG9, dbsource = "dimensions", format = "excel")
-
-#prepare for analysis
-
-result <- biblioAnalysis(N, sep = ";")
-
-#what does the data for SDG 8 and "machine learning look like"
-summary(result, k = 10, pause = FALSE)
-
-#Citation Frequency Distribution
-citations(N, field = "references", sep = ";")
-
-#Measuring the Top-Authors’ Productivity over Time
-authorProdOverTime(N, k = 10, graph = TRUE)
-
-# Creating Author's Collaboration Network
-NMatrix <- biblioNetwork(N, analysis = "collaboration", network = "authors", sep = ";")
-
-# Plotting Author's Collaboration Network
-net <- networkPlot(NMatrix, n = 30, type = "kamada", Title = "Author's Collaboration Network for SDG 9",labelsize=0.5)
-
-# Creating Bibliometric Networks
-options(width = 100)
-SDG9.nm <- biblioNetwork(N,
-  analysis = "coupling",
-  network = "authors",
-  n = NULL,
-  sep = ";",
-  shortlabel = TRUE)
-
-# Plot Bibliographic Network
-
-S2 <- normalizeSimilarity(SDG9.nm, type = "association")
-
-networkPlot(S2, n = 200, Title = "Co-occurrence Network for SDG 9", type = "fruchterman", 
+nett <- networkPlot(S, n = 200, Title = "Keyword Co-occurrence Analysis based on Dimensions data for SDG 7", type = "fruchterman", 
                     labelsize = 0.7, halo = FALSE, cluster = "walktrap",
                     remove.isolates = FALSE, remove.multiple = FALSE, noloops = TRUE, weighted = TRUE)
 
-# Bradford's Law
-bradford(N)
+####### Co-citation Networks #######
+Author.matrix <- biblioNetwork(M, analysis = "co-citation", network = "authors", sep = ";")
 
-#############################################################################
+#– Authors co-citation (analysis = "co-citation", network = "authors")
+#– Reference co-citation (analysis = "co-citation", network = "references")
+#– Source co-citation (analysis = "co-citation", network = "sources")
 
-####### SDG 10 and "machine learning" search term #########
+##### Data Normalization #####
+normalizeSimilarity(NetMatrix, type = "association") #2202 x 2202 sparse Matrix of class "dsCMatrix"
 
-#load files
-SDG10 <- "http://export.uberresearch.com/2020-04-17/132b56258cfc99b46a01c3f962434a59/Dimensions-Publication-2020-04-17_13-43-54.xlsx"
+### Data reduction ###
+#creating a map of underlying concept structures
+CS <- conceptualStructure(M, method="MCA", field="ID", minDegree=10, clust=5, stemming=FALSE, labelsize=8,documents=20) 
+#Plots conceptual structure map of a scientific field using MCA and Clustering
 
-#convert search results to excel
-O <- convert2df(SDG10, dbsource = "dimensions", format = "excel")
+citations(M, field = "article", sep = ";")
 
-#prepare for analysis
 
-resultz <- biblioAnalysis(O, sep = ";")
+# extracting the meta-data about author's country information
+M <- metaTagExtraction(M, Field = "CR_AU", sep = ";", aff.disamb = TRUE)
 
-#what does the data for SDG 8 and "machine learning look like"
-summary(resultz, k = 10, pause = FALSE)
+A <- cocMatrix(M, Field = "AU_CO", sep = ";")
 
-#Citation Frequency Distribution
-citations(O, field = "references", sep = ";")
-
-#Measuring the Top-Authors’ Productivity over Time
-authorProdOverTime(O, k = 10, graph = TRUE)
-
-# Creating Author's Collaboration Network
-NMatriz <- biblioNetwork(O, analysis = "collaboration", network = "authors", sep = ";")
-
-# Plotting Author's Collaboration Network
-netz <- networkPlot(NMatriz, n = 30, type = "kamada", Title = "Author's Collaboration Network for SDG 10",labelsize=0.5)
-
-# Creating Bibliometric Networks
-
-options(width = 100)
-
-NetMatrixz <- biblioNetwork(O, analysis = "co-occurrences", network = "author_keywords", sep = ";")
-T <- normalizeSimilarity(NetMatrixz, type = "association")
-nett <- networkPlot(T, n = 200, Title = "Co-occurrence Network for SDG 10", type = "fruchterman", 
-                    labelsize = 0.7, halo = FALSE, cluster = "walktrap",
-                    remove.isolates = FALSE, remove.multiple = FALSE, noloops = TRUE, weighted = TRUE)
-
-# Bradford's Law
-bradford(O)
-
-#############################################################################
-
-####### SDG 12 and "machine learning" search term #########
-
-#load files
-SDG12 <- "http://export.uberresearch.com/2020-04-17/38fd0625855f2bb53963858965b05f1f/Dimensions-Publication-2020-04-17_13-51-47.xlsx"
-
-#convert search results to excel
-P <- convert2df(SDG12, dbsource = "dimensions", format = "excel")
-
-#prepare for analysis
-resultz <- biblioAnalysis(P, sep = ";")
-
-#what does the data for SDG 8 and "machine learning look like"
-summary(resultz, k = 10, pause = FALSE)
-
-#Citation Frequency Distribution
-citations(P, field = "references", sep = ";")
-
-#Measuring the Top-Authors’ Productivity over Time
-authorProdOverTime(P, k = 10, graph = TRUE)
-
-# Creating Author's Collaboration Network
-NMatrixz <- biblioNetwork(P, analysis = "collaboration", network = "authors", sep = ";")
-
-# Plotting Author's Collaboration Network
-netz <- networkPlot(NMatrixz, n = 30, type = "kamada", Title = "Author's Collaboration Network for SDG 12",labelsize=0.5)
-
-# Creating Bibliometric Networks
-
-options(width = 100)
-
-NetMatrixzz <- biblioNetwork(P, analysis = "co-occurrences", network = "author_keywords", sep = ";")
-TZ <- normalizeSimilarity(NetMatrixzz, type = "association")
-nettz <- networkPlot(TZ, n = 200, Title = "Co-occurrence Network for SDG 12", type = "fruchterman", 
-                    labelsize = 0.7, halo = FALSE, cluster = "walktrap",
-                    remove.isolates = FALSE, remove.multiple = FALSE, noloops = TRUE, weighted = TRUE)
-
-# Bradford's Law
-bradford(P)
+# biblio-graphic coupling
+new.M <- biblioNetwork(M, analysis = "coupling", network = "references", sep = ";")
 
