@@ -1,0 +1,43 @@
+library(readxl)
+library(ggplot2)
+library(dplyr)
+
+
+graph <- read.csv2("Total SDG_ML_Dimensions Results.csv")
+graph$SDG <- as.factor(graph$SDG)
+
+name <- c("No Poverty", "Zero Hunger","Good Health and Well-being", "Quality Education", "Gender Equality", "Clean Water and Sanitation","Affordable and Clean Energy", "Decent Work and Economic Growth", "Industry, Innovation and Infrastructure", "Reduced Inequality","Sustainable Cities and Communities","Responsible Consumption and Production", "Climate Action","Life Below Water", "Life on Land","Peace and Justice Strong Institutions","Partnerships to achieve the Goal")
+graph <- cbind(graph,name)
+graph$name <- as.factor(graph$name)
+
+
+ggplot(graph, aes(x=SDG,y=Publications))+
+  geom_col()+
+  scale_y_continuous(limits=c(0,60000), breaks=seq(0,60000,10000), expand = c(0, 0))+
+  scale_x_discrete(expand = c(0, 0))
+
+ggplot(graph, aes(x=reorder(name,-Publications),y=Publications))+
+  geom_col()+
+  scale_y_continuous(limits=c(0,60000), breaks=seq(0,60000,10000), expand = c(0, 0))+
+  scale_x_discrete(expand = c(0, 0))+
+  labs(title="Distribution of Machine Learning Publications within Sustainable Development Goals", 
+       subtitle="(Total Publications per Goal)", 
+       caption="Note: how different the SDG's with the highest results are.",
+       y="Publications",
+       x="Sustainable Development Goals") +  # title and caption
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_line(colour = 'gray',size=0.3),
+        panel.grid.minor = element_line(colour = 'gray',size=0.1),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        legend.position = "none",
+        axis.text.x = element_text(angle = 90),
+        plot.title = element_text(size = 14,hjust = 0.5),
+        plot.subtitle = element_text(size = 12,hjust = 0.5),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 11),
+        plot.caption = element_text(size = 8,hjust = 0,margin=margin(t=10)))
+
+
+
+
